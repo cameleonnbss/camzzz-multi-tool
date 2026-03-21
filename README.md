@@ -145,7 +145,7 @@ pip install -r requirements.txt
 
 **4 — Lancer**
 ```bat
-python multitool_v5.py
+python multi-tool+osint-osint_tools_V5.py
 ```
 
 > **Conseil Windows :** Lance CMD ou PowerShell en tant qu'Administrateur si tu as des erreurs de permission.
