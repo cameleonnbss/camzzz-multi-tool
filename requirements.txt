@@ -1,0 +1,15 @@
+# Multi Tool V5 — By camzzz
+# https://github.com/cameleonnbss
+#
+# Install with:
+#   pip install -r requirements.txt
+ 
+# Terminal colours and styling
+colorama>=0.4.6
+ 
+# HTTP requests and API calls
+requests>=2.28.0
+ 
+# Image EXIF metadata extraction (module 42)
+Pillow>=9.0.0
+ 
