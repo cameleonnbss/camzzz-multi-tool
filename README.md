@@ -64,7 +64,7 @@ pip install -r requirements.txt
 
 **4 — Run**
 ```bat
-python multitool_v5.py
+python3 multi-tool+osint-osint_tools_v5.py
 ```
 
 > **Tip for Windows:** Run CMD or PowerShell as Administrator if you have permission issues.
