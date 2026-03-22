@@ -1,14 +1,80 @@
-# Multi Tool V5 — By camzzz
-# https://github.com/cameleonnbss
+# ╔══════════════════════════════════════════════════════╗
+#   CAMZZZ MULTI-TOOL V7 — requirements.txt
+#   By camzzz
+# ╚══════════════════════════════════════════════════════╝
 #
-# Install with:
-#   pip install -r requirements.txt
+#  QUICK INSTALL (mandatory only):
+#    pip install -r requirements.txt
+#
+#  FULL INSTALL (everything at once):
+#    pip install -r requirements.txt
+#    pip install holehe sherlock-project h8mail maigret theHarvester
+#
+#  Windows:
+#    python -m pip install -r requirements.txt
+#
+#  Linux / Termux / Android:
+#    pip install -r requirements.txt
+# ──────────────────────────────────────────────────────
 
-# Terminal colours and styling
-colorama>=0.4.6
+# ┌─────────────────────────────────────────────────────┐
+# │  MANDATORY — script won't run without these         │
+# └─────────────────────────────────────────────────────┘
 
-# HTTP requests and API calls
+# HTTP requests — all API calls, web tools, breach checks
 requests>=2.28.0
 
-# Image EXIF metadata extraction (module 42)
+# Terminal colors and styling (Windows + Linux + Android)
+colorama>=0.4.6
+
+# ┌─────────────────────────────────────────────────────┐
+# │  RECOMMENDED — enables extra features in the tool   │
+# └─────────────────────────────────────────────────────┘
+
+# Image metadata / EXIF extraction — option 62
 Pillow>=9.0.0
+
+# ┌─────────────────────────────────────────────────────┐
+# │  OPTIONAL OSINT TOOLS — options 80 to 85            │
+# │  The script works without them — install if needed  │
+# └─────────────────────────────────────────────────────┘
+
+# Holehe — check if email is registered on 120+ sites   (option 81)
+# Method: password reset endpoints, read-only
+# Usage:  holehe target@email.com --only-used
+# holehe
+
+# Sherlock — username OSINT across 400+ platforms       (option 83)
+# The most well-known username tracker
+# Usage:  sherlock username --print-found
+# sherlock-project
+
+# h8mail — password breach hunting, multi-API           (option 82)
+# Supports: HIBP, LeakCheck, Snusbase, Hunter.io
+# Usage:  h8mail -t target@email.com
+# h8mail
+
+# Maigret — username OSINT across 3000+ sites           (option 85)
+# Advanced Sherlock fork, generates HTML reports
+# Usage:  maigret username --print-found
+# maigret
+
+# theHarvester — email/subdomain/IP recon               (option 84)
+# Sources: Google, Bing, Shodan, crt.sh, Hunter.io...
+# Usage:  theHarvester -d example.com -b google,bing
+# theHarvester
+
+# ┌─────────────────────────────────────────────────────┐
+# │  API KEYS NEEDED (all free tiers available)         │
+# └─────────────────────────────────────────────────────┘
+#
+#  Configure via option 98 in the tool (auto-saved)
+#
+#  LeakCheck      — https://leakcheck.io           (50 req/month free)
+#  BreachDirectory— https://rapidapi.com/rohan-patra/api/breachdirectory
+#  Shodan         — https://account.shodan.io      (free tier)
+#  Hunter.io      — https://hunter.io              (25 req/month free)
+#  VirusTotal     — https://www.virustotal.com     (500 req/day free)
+#  OpenRouter IA  — https://openrouter.ai          (free, no credit card)
+#  XposedOrNot    — No key needed, free API
+#  HIBP Passwords — No key needed, free API
