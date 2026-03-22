@@ -19,14 +19,14 @@ from datetime import datetime
 
 # ── Auto-install des dependances manquantes
 def _ensure_deps():
-    import importlib, subprocess as _sp
+    import importlib.util, subprocess as _sp
     deps = {"requests": "requests", "colorama": "colorama"}
     missing = [pkg for mod, pkg in deps.items() if not importlib.util.find_spec(mod)]
     if missing:
         print(f"  Installation des dependances manquantes: {', '.join(missing)}")
-        _sp.check_call([sys.executable, "-m", "pip", "install"] + missing, 
+        _sp.check_call([sys.executable, "-m", "pip", "install"] + missing,
                        stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
-        print("  [OK] Dependances installees. Relancement...\n")
+        print("  [OK] Dependances installees.\n")
 _ensure_deps()
 
 import requests
@@ -83,9 +83,10 @@ hunter_key =
 # Inscription : https://www.virustotal.com/gui/join-us
 virustotal_key =
 
-# WormGPT — IA integree au multi-tool
-# Cle gratuite sur : https://chat.wrmgpt.com
-wormgpt_key =
+
+# OpenRouter — IA gratuite, peu censuree (DeepSeek, Llama, Mistral...)
+# Inscription GRATUITE sans CB : https://openrouter.ai
+openrouter_key =
 
 [SETTINGS]
 # Timeout des requetes en secondes
@@ -145,7 +146,7 @@ BREACHDIR_KEY   = get_key(_CFG, "breachdirectory_key")
 SHODAN_KEY      = get_key(_CFG, "shodan_key")
 HUNTER_KEY      = get_key(_CFG, "hunter_key")
 VIRUSTOTAL_KEY  = get_key(_CFG, "virustotal_key")
-WORMGPT_KEY     = get_key(_CFG, "wormgpt_key")
+OPENROUTER_KEY  = get_key(_CFG, "openrouter_key")
 
 # Settings
 REQ_TIMEOUT  = int(get_setting(_CFG, "timeout", "10"))
@@ -241,21 +242,9 @@ CAMZZZ_LINES = [
 
 BANNER = """
 ==================================================================================================
-/*  _____                                                      _____  */
-/* ( ___ )                                                    ( ___ ) */
-/*  |   |~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|   |  */
-/*  |   |   _________ _____ ___  ____________                  |   |  */
-/*  |   |  / ___/ __ `/ __ `__ \\/_  /_  /_  /                  |   |  */
-/*  |   | / /__/ /_/ / / / / / / / /_/ /_/ /_                  |   |  */
-/*  |   | \\___/\\__,_/_/ /_/ /_/_/___/___/___/_              __ |   |  */
-/*  |   |    ____ ___  __  __/ / /_(_)     / /_____  ____  / / |   |  */
-/*  |   |   / __ `__ \\/ / / / / __/ /_____/ __/ __ \\/ __ \\/ /  |   |  */
-/*  |   |  / / / / / / /_/ / / /_/ /_____/ /_/ /_/ / /_/ / /   |   |  */
-/*  |   | /_/ /_/ /_/\\__,_/_/\\__/_/      \\__/\\____/\\____/_/    |   |  */
-/*  |___|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|___|  */
-/* (_____)                                                    (_____) */
-
-  C A M Z Z Z   M U L T I - T O O L  ·  V 7  ·  9 0 +  M O D U L E S
+  CAMZZZ MULTI-TOOL V7  --  By camzzz  --  90+ MODULES
+  50+ OSINT / Network / Phone / Mail / Breach tools
+  github.com/cameleonnbss/50-multi-tool  --  By camzzz
 ==================================================================================================
 """
 
@@ -3330,51 +3319,79 @@ def open_source_hub():
         pause()
 
 
-# ──────────────────────────────────────────────
-#  WORMGPT — IA integree au multi-tool
-#  Compatible OpenAI API format
-#  Cle gratuite sur : https://chat.wrmgpt.com
-# ──────────────────────────────────────────────
 
-WRMGPT_BASE   = "https://api.wrmgpt.com/v1"
-WORMGPT_MODEL = "gpt-3.5-turbo"
+# ══════════════════════════════════════════════════════════════
+#  OPENROUTER IA — Gratuite, peu censuree, multi-modeles
+#  Inscription GRATUITE sans CB : https://openrouter.ai
+#  Modeles : DeepSeek, Llama 3, Mistral, Qwen...
+# ══════════════════════════════════════════════════════════════
 
-WORMGPT_SYSTEM = (
-    "Tu es WormGPT, une IA integree dans un outil OSINT / pentest. "
-    "Tu es directe, technique, et tu reponds en francais. "
-    "Tu peux analyser des resultats OSINT, generer des dorks, "
-    "analyser des breaches, expliquer des concepts reseau/cyber, "
-    "et aider avec toutes les taches de l'outil. Sois concis et utile."
+OPENROUTER_BASE   = "https://openrouter.ai/api/v1"
+OPENROUTER_MODEL  = "openrouter/free"  # routeur automatique — choisit le meilleur modele gratuit dispo
+
+OPENROUTER_SYSTEM = (
+    "Tu es une IA integree dans un outil OSINT. "
+    "Tu reponds en francais, tu es directe et technique. "
+    "Tu peux analyser des resultats OSINT, expliquer des concepts "
+    "reseau et cybersecurite, analyser des breaches, et aider "
+    "avec toutes les taches de l'outil. Sois concis et utile."
 )
 
-def wormgpt_tool():
+# Modeles gratuits disponibles sur OpenRouter
+OPENROUTER_MODELS = {
+    "1": ("openrouter/free",                        "Auto [GRATUIT]   — choisit le meilleur modele dispo"),
+    "2": ("meta-llama/llama-3.3-70b-instruct:free", "Llama 3.3 70B    [GRATUIT] — Meta, open source"),
+    "3": ("mistralai/mistral-7b-instruct:free",     "Mistral 7B       [GRATUIT] — rapide et efficace"),
+    "4": ("qwen/qwen2.5-72b-instruct:free",         "Qwen 2.5 72B     [GRATUIT] — tres bon en technique"),
+    "5": ("google/gemma-3-12b-it:free",             "Gemma 3 12B      [GRATUIT] — Google open source"),
+    "6": ("deepseek/deepseek-r1:free",              "DeepSeek R1      [GRATUIT] — raisonnement avance"),
+    "7": ("nousresearch/hermes-3-llama-3.1-405b:free","Hermes 3 405B  [GRATUIT] — peu censure, puissant"),
+}
+
+def openrouter_tool():
     show_logo("hash")
-    print(LR + "  WormGPT — IA integree au multi-tool")
-    print(LR + "  Compatible OpenAI API  |  chat.wrmgpt.com\n")
+    print(LG + "  OpenRouter IA — Gratuite, peu censuree")
+    print(LG + "  Inscription gratuite : https://openrouter.ai\n")
 
-    global WORMGPT_KEY
-    key = WORMGPT_KEY.strip()
+    global OPENROUTER_KEY, OPENROUTER_MODEL
 
+    key = OPENROUTER_KEY.strip()
     if not key:
-        print(LY + "  Aucune cle WormGPT trouvee dans config.ini")
-        print(LY + "  1. Va sur https://chat.wrmgpt.com")
-        print(LY + "  2. Cree un compte gratuit")
-        print(LY + "  3. Dashboard > API Key > copie ta cle\n")
-        key = input(LY + "  Entre ta cle WormGPT (ou ENTER pour annuler) > ").strip()
+        print(LY + "  Aucune cle OpenRouter configuree.")
+        print(LY + "  1. Va sur https://openrouter.ai")
+        print(LY + "  2. Sign Up (email, SANS carte bancaire)")
+        print(LY + "  3. Keys > Create Key > copie ta cle\n")
+        key = input(LY + "  Entre ta cle OpenRouter > ").strip()
         if not key:
             pause(); return
-        # Sauvegarde automatique SANS demander — plus jamais redemandee
-        save_key("wormgpt_key", key)
-        WORMGPT_KEY = key
-        print(LG + "  [OK]  Cle sauvegardee dans config.ini — ne sera plus jamais redemandee.")
+        save_key("openrouter_key", key)
+        OPENROUTER_KEY = key
+        print(LG + "  [OK]  Cle sauvegardee dans config.ini — ne sera plus jamais demandee.\n")
+        time.sleep(0.6)
 
-    print(LR + "\n  1  Chat libre avec WormGPT")
-    print(LR + "  2  Analyser un email / username OSINT")
-    print(LR + "  3  Analyser des resultats de breach")
-    print(LR + "  4  Expliquer un concept cyber / reseau")
-    print(LR + "  5  Analyser une IP / domaine")
-    print(LR + "  6  Generer un rapport OSINT complet (.txt)\n")
-    c = input(LR + "  Choice > ").strip()
+    print(LG + "  1  Chat libre")
+    print(LG + "  2  Analyser un email / username OSINT")
+    print(LG + "  3  Analyser des resultats de breach")
+    print(LG + "  4  Expliquer un concept cyber / reseau")
+    print(LG + "  5  Analyser une IP / domaine")
+    print(LG + "  6  Generer un rapport OSINT complet (.txt)")
+    print(LG + "  7  Changer de modele IA\n")
+    c = input(LG + "  Choice > ").strip()
+
+    if c == "7":
+        section("CHOISIR UN MODELE IA", LG)
+        print(LG + "  Tous ces modeles sont GRATUITS sur OpenRouter\n")
+        for num, (mid, desc) in OPENROUTER_MODELS.items():
+            current = " <- ACTUEL" if mid == OPENROUTER_MODEL else ""
+            print(LG + f"  {num}  {desc}{current}")
+        print()
+        choice = input(LG + "  Numero du modele > ").strip()
+        if choice in OPENROUTER_MODELS:
+            OPENROUTER_MODEL = OPENROUTER_MODELS[choice][0]
+            print(LG + f"  [OK]  Modele change : {OPENROUTER_MODELS[choice][1]}")
+        else:
+            print(LR + "  Choix invalide.")
+        pause(); return
 
     PRE_PROMPTS = {
         "2": ("Email / Username a analyser > ",
@@ -3390,56 +3407,61 @@ def wormgpt_tool():
               "et technique, avec un exemple concret : "),
         "5": ("IP ou domaine > ",
               "Analyse cette IP ou ce domaine d'un point de vue OSINT/securite. "
-              "Quoi chercher, quels outils utiliser, quels indicateurs surveiller, "
-              "et quelles conclusions preliminaires tirer : "),
+              "Quoi chercher, quels outils utiliser, quels indicateurs surveiller : "),
         "6": ("Sujet du rapport OSINT > ",
               "Genere un rapport OSINT complet et structure sur ce sujet. "
               "Inclus : resume executif, methodologie, sources recommandees, "
               "resultats attendus, et recommandations finales : "),
     }
 
-    def call_wormgpt(messages):
-        r = requests.post(
-            f"{WRMGPT_BASE}/chat/completions",
+    def call_openrouter(messages):
+        return requests.post(
+            f"{OPENROUTER_BASE}/chat/completions",
             headers={
-                "Authorization": f"Bearer {key}",
-                "Content-Type":  "application/json",
+                "Authorization":  f"Bearer {key}",
+                "Content-Type":   "application/json",
+                "HTTP-Referer":   "https://github.com/cameleonnbss/50-multi-tool",
+                "X-Title":        "camzzz-multi-tool",
             },
             json={
-                "model":       WORMGPT_MODEL,
+                "model":       OPENROUTER_MODEL,
                 "messages":    messages,
                 "max_tokens":  1024,
                 "temperature": 0.7,
             },
             timeout=30
         )
-        return r
 
-    def display_response(reply, tokens="?"):
+    def display_reply(reply, model, tokens="?"):
         print()
-        print(LR + "  WormGPT :")
+        print(LG + f"  IA [{model.split('/')[1].split(':')[0]}] :")
         print()
         for line in reply.split("\n"):
             print(LW + f"  {line}")
         print()
-        print(DIM + f"  [tokens: {tokens}]")
+        print(DIM + f"  [modele: {model}  |  tokens: {tokens}]")
         print()
 
     def handle_error(r):
         if r.status_code == 401:
-            print(LR + "  Cle API invalide ou expiree.")
-            print(LY + "  Verifie ta cle sur https://chat.wrmgpt.com")
+            print(LR + "  Cle invalide ou expiree.")
+            print(LY + "  Regenere ta cle sur https://openrouter.ai/keys")
         elif r.status_code == 429:
-            print(LY + "  Rate limit atteint. Attends un peu.")
+            print(LY + "  Rate limit atteint. Attends un peu ou change de modele (option 7).")
+        elif r.status_code == 402:
+            print(LY + "  Credits insuffisants — essaie un modele :free (option 7).")
         else:
             print(LR + f"  Erreur API: HTTP {r.status_code}")
-            print(LY + f"  {r.text[:200]}")
+            try: print(LY + f"  {r.json().get('error',{}).get('message',r.text[:150])}")
+            except: print(LY + f"  {r.text[:150]}")
 
     # Chat libre multi-tour
     if c == "1":
-        section("WormGPT — CHAT LIBRE", LR)
-        print(LR + "  Tape 'exit' pour quitter.\n")
-        history = [{"role": "system", "content": WORMGPT_SYSTEM}]
+        section("OPENROUTER — CHAT LIBRE", LG)
+        model_name = OPENROUTER_MODEL.split("/")[1].split(":")[0] if "/" in OPENROUTER_MODEL else OPENROUTER_MODEL
+        print(LG + f"  Modele actif : {model_name}")
+        print(LG + "  Tape 'exit' pour quitter. 'model' pour changer de modele.\n")
+        history = [{"role": "system", "content": OPENROUTER_SYSTEM}]
         while True:
             try:
                 user_input = input(LG + "  Toi > ").strip()
@@ -3447,20 +3469,24 @@ def wormgpt_tool():
                 print(); break
             if user_input.lower() in ["exit", "quit", "q", ""]:
                 break
+            if user_input.lower() == "model":
+                print(LG + f"  Modele actuel : {OPENROUTER_MODEL}")
+                print(LG + "  Tape 7 dans le menu principal pour changer.")
+                continue
             history.append({"role": "user", "content": user_input})
-            spinner("WormGPT reflechit...", 1.2, LR)
+            spinner("IA reflechit...", 1.2, LG)
             try:
-                r = call_wormgpt(history)
+                r = call_openrouter(history)
                 if r.status_code == 200:
-                    data  = r.json()
-                    reply = data["choices"][0]["message"]["content"].strip()
+                    data   = r.json()
+                    reply  = data["choices"][0]["message"]["content"].strip()
                     tokens = data.get("usage", {}).get("total_tokens", "?")
                     history.append({"role": "assistant", "content": reply})
-                    display_response(reply, tokens)
+                    display_reply(reply, OPENROUTER_MODEL, tokens)
                 else:
                     handle_error(r); break
             except requests.exceptions.ConnectionError:
-                print(LR + "  Connexion impossible a api.wrmgpt.com")
+                print(LR + "  Connexion impossible a openrouter.ai")
                 print(LY + "  Verifie ta connexion internet."); break
             except Exception as ex:
                 print(LR + f"  Erreur: {ex}"); break
@@ -3468,12 +3494,12 @@ def wormgpt_tool():
     # Modes pre-configures
     elif c in PRE_PROMPTS:
         label, inject = PRE_PROMPTS[c]
-        user_input = input(LR + f"  {label}").strip()
+        user_input = input(LG + f"  {label}").strip()
         if not user_input: pause(); return
-        spinner("WormGPT analyse...", 1.5, LR)
+        spinner("IA analyse...", 1.5, LG)
         try:
-            r = call_wormgpt([
-                {"role": "system", "content": WORMGPT_SYSTEM},
+            r = call_openrouter([
+                {"role": "system", "content": OPENROUTER_SYSTEM},
                 {"role": "user",   "content": inject + user_input},
             ])
             if r.status_code == 200:
@@ -3481,33 +3507,34 @@ def wormgpt_tool():
                 reply  = data["choices"][0]["message"]["content"].strip()
                 tokens = data.get("usage", {}).get("total_tokens", "?")
                 mode_labels = {
-                    "2":"ANALYSE OSINT","3":"ANALYSE BREACH",
-                    "4":"EXPLICATION CYBER","5":"ANALYSE IP/DOMAINE",
-                    "6":"RAPPORT OSINT",
+                    "2": "ANALYSE OSINT", "3": "ANALYSE BREACH",
+                    "4": "EXPLICATION CYBER", "5": "ANALYSE IP/DOMAINE",
+                    "6": "RAPPORT OSINT",
                 }
-                section(f"WormGPT — {mode_labels.get(c,'REPONSE')}", LR)
-                display_response(reply, tokens)
+                section(f"IA — {mode_labels.get(c,'REPONSE')}", LG)
+                display_reply(reply, OPENROUTER_MODEL, tokens)
                 try:
                     sv = input(LY + "  Sauvegarder en .txt? [y/N] > ").strip().lower()
                     if sv == "y":
-                        fname = f"wormgpt_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-                        with open(fname, "w", encoding="utf-8") as f:
-                            f.write(f"WormGPT — {mode_labels.get(c,'REPONSE')}\n")
-                            f.write(f"Date: {datetime.now()}\nInput: {user_input}\n")
-                            f.write("="*60 + "\n\n" + reply + "\n")
+                        fname = f"openrouter_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+                        with open(fname, "w", encoding="utf-8") as f_out:
+                            f_out.write(f"OpenRouter IA — {mode_labels.get(c,'REPONSE')}\n")
+                            f_out.write(f"Modele: {OPENROUTER_MODEL}\n")
+                            f_out.write(f"Date: {datetime.now()}\nInput: {user_input}\n")
+                            f_out.write("="*60 + "\n\n" + reply + "\n")
                         print(LG + f"  Sauvegarde: {fname}")
                 except Exception: pass
             else:
                 handle_error(r)
         except requests.exceptions.ConnectionError:
-            print(LR + "  Connexion impossible a api.wrmgpt.com")
+            print(LR + "  Connexion impossible a openrouter.ai")
         except Exception as ex:
             print(LR + f"  Erreur: {ex}")
     else:
         print(LR + "  Option invalide.")
 
     print()
-    print(LC + "  WormGPT : https://chat.wrmgpt.com")
+    print(LC + "  OpenRouter : https://openrouter.ai  |  Gratuit sans CB")
     print(LC + "  Cle configurable via option 98 (Gestionnaire cles API)")
     pause()
 
@@ -3518,7 +3545,7 @@ def wormgpt_tool():
 # ──────────────────────────────────────────────
 
 def api_key_manager():
-    global LEAKCHECK_KEY, BREACHDIR_KEY, SHODAN_KEY, HUNTER_KEY, VIRUSTOTAL_KEY, WORMGPT_KEY
+    global LEAKCHECK_KEY, BREACHDIR_KEY, SHODAN_KEY, HUNTER_KEY, VIRUSTOTAL_KEY, OPENROUTER_KEY
     show_logo("hash")
     print(LG + "  Gestionnaire de cles API — config.ini\n")
     print(LG + f"  Fichier config : {CONFIG_FILE}\n")
@@ -3530,7 +3557,7 @@ def api_key_manager():
         ("Shodan",          "shodan_key",            SHODAN_KEY,     "https://account.shodan.io/register"),
         ("Hunter.io",       "hunter_key",            HUNTER_KEY,     "https://hunter.io/users/sign_up"),
         ("VirusTotal",      "virustotal_key",        VIRUSTOTAL_KEY, "https://www.virustotal.com/gui/join-us"),
-        ("WormGPT",         "wormgpt_key",           WORMGPT_KEY,    "https://chat.wrmgpt.com"),
+        ("OpenRouter (free)", "openrouter_key",         OPENROUTER_KEY, "https://openrouter.ai"),
     ]
 
     section("STATUT DES CLES API", LG)
@@ -3576,7 +3603,7 @@ def api_key_manager():
             elif cfg_name == "shodan_key":           SHODAN_KEY     = new_key
             elif cfg_name == "hunter_key":           HUNTER_KEY     = new_key
             elif cfg_name == "virustotal_key":       VIRUSTOTAL_KEY = new_key
-            elif cfg_name == "wormgpt_key":          WORMGPT_KEY    = new_key
+            elif cfg_name == "openrouter_key":      OPENROUTER_KEY = new_key
             print(LG + f"\n  [OK]  Cle {name} sauvegardee dans config.ini")
             print(LG + f"  [OK]  Active immediatement — ne sera plus jamais redemandee")
         except (ValueError, IndexError):
@@ -3608,7 +3635,7 @@ def api_key_manager():
         if confirm == "oui":
             with open(CONFIG_FILE, "w", encoding="utf-8") as f:
                 f.write(CONFIG_TEMPLATE)
-            LEAKCHECK_KEY = BREACHDIR_KEY = SHODAN_KEY = HUNTER_KEY = VIRUSTOTAL_KEY = WORMGPT_KEY = ""
+            LEAKCHECK_KEY = BREACHDIR_KEY = SHODAN_KEY = HUNTER_KEY = VIRUSTOTAL_KEY = OPENROUTER_KEY = ""
             print(LG + "  [OK]  Config reinitialise.")
         else:
             print(LY + "  Annule.")
@@ -3707,8 +3734,8 @@ MENU = """
   | (81) Holehe  (email 120+ sites) |  +---------------------------------+
   | (82) h8mail  (breach hunting)   |  |      IA INTEGREE                |
   | (83) Sherlock (user 400+ sites) |  +---------------------------------+
-  | (84) theHarvester (recon dom.)  |  | (90) WormGPT  [chat.wrmgpt.com] |
-  | (85) Maigret (user 3000+ sites) |  |      Chat / OSINT / Dorks /     |
+  | (84) theHarvester (recon dom.)  |  | (90) OpenRouter IA [GRATUIT]    |
+  | (85) Maigret (user 3000+ sites) |  |      Chat libre / OSINT /       |
   +---------------------------------+  |      Breach / Rapports          |
                                        +---------------------------------+
 
@@ -3789,7 +3816,7 @@ DISPATCH = {
     "83": sherlock_tool,
     "84": theharvester_tool,
     "85": maigret_tool,
-    "90": wormgpt_tool,
+    "90": openrouter_tool,
     "98": api_key_manager,
     "99": contact,
 }
